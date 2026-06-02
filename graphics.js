@@ -1,7 +1,22 @@
+// document.querySelector('canvas').width = document.body.width;
+// document.querySelector('canvas').height = document.body.height / 2;
+
+const canvasElement = document.querySelector('canvas');
+
+const dimensions = canvasElement.getBoundingClientRect();
+const dpr = window.devicePixelRatio || 1;
+
+export const width = dimensions.width * dpr;
+export const height = dimensions.height * dpr;
+
+canvasElement.width = width;
+canvasElement.height = height;
+
 export const canvas = document.querySelector('canvas').getContext('2d');
+canvas.scale(dpr, dpr);
 
 export function clear() {
-	canvas.clearRect(0, 0, 10000, 10000);
+	canvas.clearRect(0, 0, width, height);
 }
 
 export function plot(
@@ -16,9 +31,6 @@ export function plot(
 ) {
 	const start = rangeStart ? rangeStart : 0;
 	const end = rangeEnd ? rangeEnd : 360;
-
-	const width = document.querySelector('canvas').width;
-	const height = document.querySelector('canvas').height;
 
 	function x(x) {
 		return (width / (end - start)) * (x - start) * (sx ? sx : 1);
@@ -68,11 +80,8 @@ export function plotTemperature(
 	const start = rangeStart ? rangeStart : 0;
 	const end = rangeEnd ? rangeEnd : 360;
 
-	const width = document.querySelector('canvas').width;
-	const height = document.querySelector('canvas').height;
-
 	function x(x) {
-		return (width / (end - start)) * (x - start) * (sx ? sx : 1);
+		return (width / (end - start)) * (x - start) * (sx ? sx : 1) + 50;
 	}
 
 	function y(y) {
@@ -98,7 +107,7 @@ export function plotTemperature(
 		canvas.font = '40px Arial';
 
 		canvas.strokeText(
-			`${Math.floor(data[i])}°`,
+			`${Math.round(data[i])}°`,
 			x(i) - 25,
 			y(data[i]) + 50,
 		);

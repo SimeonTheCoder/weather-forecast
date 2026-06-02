@@ -17,6 +17,7 @@ import {
 	taylorSeries,
 } from './math.js';
 import { predictWithHistory } from './predictor.js';
+import { updateCards } from './ui.js';
 
 const predictionSteps = 200;
 
@@ -47,7 +48,7 @@ function renderForecast(data) {
 		sampleCount - 100 - predictionSteps,
 		sampleCount,
 		-10,
-		30,
+		40,
 		'red',
 	);
 }
@@ -62,11 +63,24 @@ range.value = data.temperature_2m.length;
 
 sliceForecast();
 
+export let dayForecsts = sliceForecast();
+renderDailyForecast();
+
+function renderDailyForecast() {
+	clearCanvas();
+
+	plotTemperature(
+		dayForecsts[forecastDaySelected].map((e) => e.temperature),
+		0,
+		24,
+		0,
+		40,
+	);
+}
+
 function sliceForecast() {
 	const value = Math.floor(range.value / 12) * 12;
 	const copy = data.temperature_2m.slice(0, value);
-
-	clearCanvas();
 
 	const forecastResult = forecast(copy, predictionSteps);
 	// renderForecast(forecastResult);
@@ -84,13 +98,9 @@ function sliceForecast() {
 		);
 	}
 
-	plotTemperature(
-		dayForecsts[forecastDaySelected].map((e) => e.temperature),
-		0,
-		24,
-		0,
-		30,
-	);
+	updateCards(dayForecsts);
+
+	return dayForecsts;
 
 	// plot(
 	// 	data.temperature_2m.slice(0, value + predictionSteps),
@@ -104,14 +114,17 @@ function sliceForecast() {
 	// );
 }
 
+export function setDay(day) {
+	forecastDaySelected = day;
+	renderDailyForecast();
+}
+
 range.oninput = sliceForecast;
 
-document.getElementById('left').addEventListener('click', () => {
-	forecastDaySelected--;
-	sliceForecast();
-});
+// document.getElementById('left').addEventListener('click', () => {
+// 	setDay(forecastDaySelected - 1);
+// });
 
-document.getElementById('right').addEventListener('click', () => {
-	forecastDaySelected++;
-	sliceForecast();
-});
+// document.getElementById('right').addEventListener('click', () => {
+// 	setDay(forecastDaySelected + 1);
+// });
