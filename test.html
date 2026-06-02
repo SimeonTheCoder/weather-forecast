@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<style>
+			main {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-around;
+			}
+
+			.icon {
+				font-size: 120px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				text-shadow: rgb(255, 0, 43) 0px 0px 20px 0px;
+				padding: unset;
+				margin: unset;
+				/* margin-bottom: -40px; */
+				/* padding: 20px;
+				padding-top: 10px;
+				padding-right: 0px; */
+			}
+
+			.weather-card {
+				box-shadow: rgb(185, 185, 185) 0px 0px 100px 0px;
+				border-radius: 20px;
+				gap: 20px;
+
+				display: flex;
+				justify-content: space-around;
+				padding: 10px;
+				padding-left: 30px;
+				padding-right: 30px;
+			}
+
+			.weather-card.selected {
+				background-color: rgba(255, 127, 80, 0.41);
+			}
+
+			.weather-card .content {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				/* align-items: center; */
+				/* padding-top: 20px; */
+				/* padding-right: 30px; */
+				/* padding-left: 20px; */
+			}
+
+			.weather-card h2 {
+				font-size: 40px;
+				margin: unset;
+			}
+
+			.weather-card h4 {
+				font-size: 30px;
+				margin: unset;
+			}
+
+			.red {
+				color: rgb(226, 120, 39);
+			}
+
+			.blue {
+				color: rgb(82, 82, 192);
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<div class="weather-card">
+				<span class="icon">⛅</span>
+				<div class="content">
+					<h2>Mon</h2>
+					<h4>
+						<span class="red">15°</span>
+						<span class="blue">5°</span>
+					</h4>
+				</div>
+			</div>
+			<div class="weather-card selected">
+				<span class="icon">⛅</span>
+				<div class="content">
+					<h2>Tue</h2>
+					<h4>
+						<span class="red">15°</span>
+						<span class="blue">5°</span>
+					</h4>
+				</div>
+			</div>
+			<div class="weather-card">
+				<span class="icon">⛅</span>
+				<div class="content">
+					<h2>Wed</h2>
+					<h4>
+						<span class="red">15°</span>
+						<span class="blue">5°</span>
+					</h4>
+				</div>
+			</div>
+			<div class="weather-card">
+				<span class="icon">⛅</span>
+				<div class="content">
+					<h2>Thu</h2>
+					<h4>
+						<span class="red">15°</span>
+						<span class="blue">5°</span>
+					</h4>
+				</div>
+			</div>
+			<div class="weather-card">
+				<span class="icon">⛅</span>
+				<div class="content">
+					<h2>Fri</h2>
+					<h4>
+						<span class="red">15°</span>
+						<span class="blue">5°</span>
+					</h4>
+				</div>
+			</div>
+		</main>
+	</body>
+</html>
