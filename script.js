@@ -22,7 +22,7 @@ import { updateCards } from './ui.js';
 const predictionSteps = 200;
 
 const URL =
-	'https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-04-02&end_date=2026-05-25&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m';
+	'https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-04-02&end_date=2026-05-31&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m';
 
 async function fetchData() {
 	const data = await fetch(URL).then((r) => r.json());
@@ -56,30 +56,38 @@ function renderForecast(data) {
 let data = await fetchData();
 let forecastDaySelected = 0;
 
-const range = document.querySelector('input');
-
-range.max = data.temperature_2m.length;
-range.value = data.temperature_2m.length;
-
 sliceForecast();
 
+let animationCounter = 1;
+let previous = [];
+
 export let dayForecsts = sliceForecast();
+previous = dayForecsts[forecastDaySelected];
 renderDailyForecast();
+
+setInterval(renderDailyForecast, 5);
 
 function renderDailyForecast() {
 	clearCanvas();
 
-	plotTemperature(
-		dayForecsts[forecastDaySelected].map((e) => e.temperature),
-		0,
-		24,
-		0,
-		40,
-	);
+	plotTemperature({
+		data: dayForecsts[forecastDaySelected].map(
+			(e, i) =>
+				e.temperature * (animationCounter / 24) +
+				previous[i].temperature * (1 - animationCounter / 24),
+		),
+		rangeStart: 0,
+		rangeEnd: 24,
+		yBoundBottom: 0,
+		yBoundTop: 40,
+		// sx: end / 24,
+	});
+
+	animationCounter = Math.min(24, animationCounter + 1);
 }
 
 function sliceForecast() {
-	const value = Math.floor(range.value / 12) * 12;
+	const value = data.temperature_2m.length;
 	const copy = data.temperature_2m.slice(0, value);
 
 	const forecastResult = forecast(copy, predictionSteps);
@@ -115,11 +123,11 @@ function sliceForecast() {
 }
 
 export function setDay(day) {
+	previous = dayForecsts[forecastDaySelected];
 	forecastDaySelected = day;
+	animationCounter = 1;
 	renderDailyForecast();
 }
-
-range.oninput = sliceForecast;
 
 // document.getElementById('left').addEventListener('click', () => {
 // 	setDay(forecastDaySelected - 1);

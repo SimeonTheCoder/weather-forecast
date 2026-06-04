@@ -278,8 +278,6 @@ function makePrediction(data, steps) {
 			velocity += -(0.1 * (curr - average));
 			velocity *= 0.9;
 
-			// console.log('Velocity: ' + velocity);
-
 			const currPrediction = curr + velocity;
 
 			result[i] += currPrediction;
