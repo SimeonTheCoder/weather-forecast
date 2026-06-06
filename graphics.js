@@ -11,17 +11,15 @@ import { getDate } from './date.js';
 
 const canvasElement = document.querySelector('canvas');
 
-const dimensions = canvasElement.getBoundingClientRect();
-const dpr = window.devicePixelRatio || 1;
+export const width = canvasElement.offsetWidth;
+export const height = canvasElement.offsetHeight;
 
-export const width = dimensions.width * dpr;
-export const height = dimensions.height * dpr;
+const sizeRatio = width / 2560;
 
 canvasElement.width = width;
 canvasElement.height = height;
 
 export const canvas = document.querySelector('canvas').getContext('2d');
-canvas.scale(dpr, dpr);
 
 export function clear() {
 	canvas.clearRect(0, 0, width, height);
@@ -83,12 +81,16 @@ export function plotWeather(options) {
 	const start = options.rangeStart ? options.rangeStart : 0;
 	const end = options.rangeEnd ? options.rangeEnd : 360;
 
+	const step = options.step ? options.step : width <= 600 ? 3 : 1;
+	const fontScale = step;
+	const iconScale = (step - 1) * 0.5 + 1;
+
 	function x(x) {
 		return (
 			(width / (end - start)) *
 				(x - start) *
 				(options.sx ? options.sx : 1) +
-			50
+			50 * sizeRatio * fontScale
 		);
 	}
 
@@ -145,19 +147,19 @@ export function plotWeather(options) {
 		);
 	}
 
-	for (let i = start; i < end - 1; i++) {
+	for (let i = start; i < end - step; i += step) {
 		canvas.beginPath();
 
 		const currTemp = options.data[i].temperature;
-		const nextTemp = options.data[i + 1].temperature;
+		const nextTemp = options.data[i + step].temperature;
 
 		const currFeels = options.data[i].feelsLike;
-		const nextFeels = options.data[i + 1].feelsLike;
+		const nextFeels = options.data[i + step].feelsLike;
 
 		const currClouds = options.data[i].clouds;
 
 		const xCurr = x(i);
-		const xNext = x(i + 1);
+		const xNext = x(i + step);
 
 		const yCurrTemp = y(currTemp);
 		const yNextTemp = y(nextTemp);
@@ -184,24 +186,44 @@ export function plotWeather(options) {
 			canvas.lineTo(xNext, yNextFeels);
 		}
 
-		canvas.font = '20px Arial';
-		canvas.fillText(`${Math.floor(i - start)}:00`, xCurr - 25, maxY - 50);
-		canvas.font = '50px Arial';
-		canvas.fillText(`${getCloudIcon(currClouds)}`, xCurr - 35, maxY - 100);
+		canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px Arial`;
+		canvas.fillText(
+			`${Math.floor(i - start)}:00`,
+			xCurr - 25 * sizeRatio * fontScale,
+			maxY - 50 * sizeRatio * fontScale,
+		);
+		canvas.font = `${Math.floor(50 * sizeRatio * iconScale)}px Arial`;
+		canvas.fillText(
+			`${getCloudIcon(currClouds)}`,
+			xCurr - 35 * sizeRatio * fontScale,
+			maxY - 100 * sizeRatio * fontScale,
+		);
 
-		canvas.font = '40px Arial';
-		canvas.fillText(`${Math.round(currTemp)}°`, xCurr - 25, minY + 50);
+		canvas.font = `${Math.floor(40 * sizeRatio * fontScale)}px Arial`;
+		canvas.fillText(
+			`${Math.round(currTemp)}°`,
+			xCurr - 25 * sizeRatio * fontScale,
+			minY + 50 * sizeRatio * fontScale,
+		);
 
 		if (options.feelsLikeEnabled) {
-			canvas.font = '20px Arial';
-			canvas.fillText('feels', xCurr - 25, minY + 80);
-			canvas.fillText('like', xCurr - 17, minY + 110);
+			canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px Arial`;
+			canvas.fillText(
+				'feels',
+				xCurr - 25 * sizeRatio * fontScale,
+				minY + 80 * sizeRatio * fontScale,
+			);
+			canvas.fillText(
+				'like',
+				xCurr - 17 * sizeRatio * fontScale,
+				minY + 110 * sizeRatio * fontScale,
+			);
 
-			canvas.font = '30px Arial';
+			canvas.font = `${Math.floor(30 * sizeRatio * fontScale)}px Arial`;
 			canvas.fillText(
 				`${Math.round(currFeels)}°`,
-				xCurr - 22,
-				minY + 150,
+				xCurr - 22 * fontScale * sizeRatio,
+				minY + 150 * fontScale * sizeRatio,
 			);
 		}
 
@@ -226,14 +248,26 @@ export function plotWeather(options) {
 	canvas.strokeStyle = options.color ? options.color : 'black';
 	canvas.stroke();
 
-	for (let i = start; i < end - 1; i++) {
+	for (let i = start; i < end - 1; i += step) {
 		canvas.fillStyle = colorFromTemperature(options.data[i].temperature);
 
 		canvas.beginPath();
 
-		canvas.arc(x(i), y(options.data[i].temperature), 5, 0, Math.PI * 2);
+		canvas.arc(
+			x(i),
+			y(options.data[i].temperature),
+			5 * sizeRatio,
+			0,
+			Math.PI * 2,
+		);
 		if (options.feelsLikeEnabled)
-			canvas.arc(x(i), y(options.data[i].feelsLike), 5, 0, Math.PI * 2);
+			canvas.arc(
+				x(i),
+				y(options.data[i].feelsLike),
+				5 * sizeRatio,
+				0,
+				Math.PI * 2,
+			);
 
 		canvas.fill();
 	}
