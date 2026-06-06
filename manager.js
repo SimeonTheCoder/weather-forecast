@@ -8,7 +8,8 @@ wind_direction_10m: "°"
 wind_speed_10m: "km/h"
 */
 
-import { clear as clearCanvas, plotWeather } from './graphics.js';
+import { getDate } from './date.js';
+import { clear as clearCanvas, plot, plotWeather } from './graphics.js';
 import {
 	fourierTransform,
 	generateArr,
@@ -27,27 +28,58 @@ function forecast(data, predictionSteps) {
 	const predictedTemperature = predictWithHistory(
 		data.temperature_2m,
 		predictionSteps,
+		-40,
+		40,
+		-20,
+		20,
+		false,
 	);
 	const predictedFeelsLike = predictWithHistory(
 		data.apparent_temperature,
 		predictionSteps,
+		-40,
+		40,
+		-20,
+		20,
+		false,
+	);
+
+	const predictedCloudCoverage = predictWithHistory(
+		data.cloud_cover,
+		predictionSteps,
+		0,
+		150,
+		-20,
+		20,
+		false,
 	);
 
 	return {
 		temperature_2m: predictedTemperature,
 		apparent_temperature: predictedFeelsLike,
+		cloud_cover: predictedCloudCoverage,
 	};
 }
 
 export async function createForecast(predictionSteps) {
-	const URL =
-		'https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-01-01&end_date=2026-05-31&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m';
+	const timeNow = getDate();
+
+	const dateStr = `${timeNow.year}-${timeNow.month.toString().padStart(2, '0')}-${(timeNow.day - 1).toString().padStart(2, '0')}`;
+	console.log(dateStr);
+
+	const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-01-01&end_date=${dateStr}&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m`;
+
+	// const URL =
+	// 	'https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-01-01&end_date=2026-05-31&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m';
+
+	// const URL =
+	// 	'https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-05-01&end_date=2026-05-20&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m';
 
 	let data = await fetchData(URL);
 	return sliceForecast(data, predictionSteps);
 }
 
-export function renderForecast(dayForecast, feelsLikeEnabled) {
+export function renderForecast(dayForecast, feelsLikeEnabled, isFirstDay) {
 	clearCanvas();
 
 	plotWeather({
@@ -55,8 +87,9 @@ export function renderForecast(dayForecast, feelsLikeEnabled) {
 		rangeStart: 0,
 		rangeEnd: 24,
 		yBoundBottom: 0,
-		yBoundTop: 40,
+		yBoundTop: 35,
 		feelsLikeEnabled: feelsLikeEnabled,
+		isFirstDay: isFirstDay,
 		// sx: end / 24,
 	});
 }
@@ -73,16 +106,13 @@ function sliceForecast(data, predictionSteps) {
 		const day = [];
 
 		for (let j = 0; j < 24; j++) {
+			const sampleIndex = pastSamplesOffset + i * 24 + j + 1;
+
 			const hour = {
 				hour: j,
-				temperature:
-					forecastResult.temperature_2m[
-						pastSamplesOffset + i * 24 + j + 1
-					],
-				feelsLike:
-					forecastResult.apparent_temperature[
-						pastSamplesOffset + i * 24 + j + 1
-					],
+				temperature: forecastResult.temperature_2m[sampleIndex],
+				feelsLike: forecastResult.apparent_temperature[sampleIndex],
+				clouds: forecastResult.cloud_cover[sampleIndex],
 			};
 
 			day.push(hour);

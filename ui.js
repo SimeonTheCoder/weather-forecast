@@ -1,3 +1,5 @@
+import { getDate, setDate } from './date.js';
+import { getCloudIcon } from './graphics.js';
 import * as manager from './manager.js';
 
 let daySelected = 0;
@@ -15,8 +17,13 @@ function clearCards() {
 }
 
 function updateCards(dayForecasts) {
+	const today = getDate();
+	console.log(today);
+
+	const daysOfTheWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
 	for (let card of cards) {
-		let id = card.id.slice(4);
+		let id = Number(card.id.slice(4));
 
 		const min = dayForecasts[id]
 			.map((e) => e.temperature)
@@ -28,8 +35,16 @@ function updateCards(dayForecasts) {
 			.reduce((acc, v) => Math.max(acc, v), -999)
 			.toFixed(0);
 
+		const averageCloduiness =
+			dayForecasts[id]
+				.map((e) => e.clouds)
+				.reduce((acc, v) => acc + v, 0) / dayForecasts[id].length;
+
+		card.children[1].children[0].textContent =
+			daysOfTheWeek[(today.dayOfWeek + id - 1 + 7) % 7];
 		card.children[1].children[1].children[0].textContent = max + '°';
 		card.children[1].children[1].children[1].textContent = min + '°';
+		card.children[0].textContent = getCloudIcon(averageCloduiness);
 	}
 }
 
@@ -38,6 +53,7 @@ function updatePreviousDay(newDay) {
 		hour: d.hour,
 		temperature: d.temperature,
 		feelsLike: feelsLikeStaged ? d.feelsLike : d.temperature,
+		clouds: d.clouds,
 	}));
 }
 
@@ -79,8 +95,15 @@ for (let card of cards) {
 	});
 }
 
-const dayForecasts = await manager.createForecast(200);
-updateCards(dayForecasts);
+let dayForecasts = await manager.createForecast(200);
+
+async function forecast() {
+	dayForecasts = await manager.createForecast(200);
+	updateCards(dayForecasts);
+}
+
+await forecast();
+cards[0].classList.add('selected');
 
 let previousDay = [];
 
@@ -89,6 +112,7 @@ for (let j = 0; j < 24; j++) {
 		hour: j,
 		temperature: 0,
 		feelsLike: 0,
+		clouds: 0,
 	};
 
 	previousDay.push(hour);
@@ -96,6 +120,7 @@ for (let j = 0; j < 24; j++) {
 
 setInterval(() => {
 	const t = smoothstep(Math.min(1, animationTimer / 10));
+	console.log(t);
 
 	manager.renderForecast(
 		dayForecasts[daySelected].map((f, i) => {
@@ -104,9 +129,11 @@ setInterval(() => {
 				temperature:
 					(1 - t) * previousDay[i].temperature + t * f.temperature,
 				feelsLike: (1 - t) * previousDay[i].feelsLike + t * f.feelsLike,
+				clouds: (1 - t) * previousDay[i].clouds + t * f.clouds,
 			};
 		}),
 		feelsLikeEnabled,
+		daySelected == 0,
 	);
 
 	animationTimer += timerSpeed;
@@ -121,3 +148,40 @@ setInterval(() => {
 		}
 	}
 }, 16);
+
+document
+	.querySelector('input[type="button"]')
+	.addEventListener('click', async () => {
+		const dateStr = document.querySelector('input[type="text"]').value;
+		const tokens = dateStr.split('.');
+
+		console.log(
+			new Date(
+				`2026-${tokens[1].padStart(2, '0')}-${tokens[0].padStart(2, '0')}`,
+			),
+		);
+
+		setDate({
+			year: 2026,
+			month: Number(tokens[1]),
+			day: Number(tokens[0]),
+			dayOfWeek: new Date(
+				`2026-${tokens[1].padStart(2, '0')}-${tokens[0].padStart(2, '0')}`,
+			).getDay(),
+			hour: getDate().hour,
+		});
+
+		console.log(getDate());
+
+		updatePreviousDay(dayForecasts[daySelected]);
+
+		await forecast();
+
+		clearCards();
+
+		daySelected = 0;
+		cards[0].classList.add('selected');
+
+		animationTimer = 0;
+		timerSpeed = 1;
+	});

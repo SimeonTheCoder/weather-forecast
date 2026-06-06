@@ -7,6 +7,7 @@ import {
 	colorToHex,
 	lerpColors,
 } from './color-utils.js';
+import { getDate } from './date.js';
 
 const canvasElement = document.querySelector('canvas');
 
@@ -24,6 +25,12 @@ canvas.scale(dpr, dpr);
 
 export function clear() {
 	canvas.clearRect(0, 0, width, height);
+}
+
+const cloudLevels = ['☀️', '🌤️', '⛅', '🌥️', '☁️'];
+
+export function getCloudIcon(percentage) {
+	return cloudLevels[Math.floor(Math.max(percentage / 100 - 0.1, 0) * 5.55)];
 }
 
 export function plot(
@@ -55,8 +62,6 @@ export function plot(
 		canvas.moveTo(x(i), y(data[i]));
 		canvas.lineTo(x(i + 1), y(data[i + 1]));
 	}
-
-	console.log(grid);
 
 	if (grid) {
 		for (let i = -100; i < 100; i += 10) {
@@ -118,6 +123,28 @@ export function plotWeather(options) {
 				);
 	}
 
+	const currHour = getDate().hour;
+
+	for (let i = start; i < end; i += 2) {
+		canvas.fillStyle = '#f8f8f8';
+		canvas.fillRect(x(i) - 50, 0, x(i + 1) - x(i), 1000);
+	}
+
+	if (options.isFirstDay) {
+		for (let i = start; i < currHour; i++) {
+			canvas.fillStyle = '#00000011';
+			canvas.fillRect(x(i) - 50, 0, x(i + 1) - x(i), 1000);
+		}
+
+		canvas.fillStyle = '#f0fff0';
+		canvas.fillRect(
+			x(currHour) - 50,
+			0,
+			x(currHour + 1) - x(currHour),
+			1000,
+		);
+	}
+
 	for (let i = start; i < end - 1; i++) {
 		canvas.beginPath();
 
@@ -126,6 +153,8 @@ export function plotWeather(options) {
 
 		const currFeels = options.data[i].feelsLike;
 		const nextFeels = options.data[i + 1].feelsLike;
+
+		const currClouds = options.data[i].clouds;
 
 		const xCurr = x(i);
 		const xNext = x(i + 1);
@@ -157,6 +186,8 @@ export function plotWeather(options) {
 
 		canvas.font = '20px Arial';
 		canvas.fillText(`${Math.floor(i - start)}:00`, xCurr - 25, maxY - 50);
+		canvas.font = '50px Arial';
+		canvas.fillText(`${getCloudIcon(currClouds)}`, xCurr - 35, maxY - 100);
 
 		canvas.font = '40px Arial';
 		canvas.fillText(`${Math.round(currTemp)}°`, xCurr - 25, minY + 50);
