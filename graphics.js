@@ -186,20 +186,20 @@ export function plotWeather(options) {
 			canvas.lineTo(xNext, yNextFeels);
 		}
 
-		canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px Arial`;
+		canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px ${options.font}`;
 		canvas.fillText(
 			`${Math.floor(i - start)}:00`,
 			xCurr - 25 * sizeRatio * fontScale,
 			maxY - 50 * sizeRatio * fontScale,
 		);
-		canvas.font = `${Math.floor(50 * sizeRatio * iconScale)}px Arial`;
+		canvas.font = `${Math.floor(50 * sizeRatio * iconScale)}px ${options.font}`;
 		canvas.fillText(
 			`${getCloudIcon(currClouds)}`,
 			xCurr - 35 * sizeRatio * fontScale,
 			maxY - 100 * sizeRatio * fontScale,
 		);
 
-		canvas.font = `${Math.floor(40 * sizeRatio * fontScale)}px Arial`;
+		canvas.font = `${Math.floor(40 * sizeRatio * fontScale)}px ${options.font}`;
 		canvas.fillText(
 			`${Math.round(currTemp)}°`,
 			xCurr - 25 * sizeRatio * fontScale,
@@ -207,7 +207,7 @@ export function plotWeather(options) {
 		);
 
 		if (options.feelsLikeEnabled) {
-			canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px Arial`;
+			canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px ${options.font}`;
 			canvas.fillText(
 				'feels',
 				xCurr - 25 * sizeRatio * fontScale,
@@ -219,7 +219,7 @@ export function plotWeather(options) {
 				minY + 110 * sizeRatio * fontScale,
 			);
 
-			canvas.font = `${Math.floor(30 * sizeRatio * fontScale)}px Arial`;
+			canvas.font = `${Math.floor(30 * sizeRatio * fontScale)}px ${options.font}`;
 			canvas.fillText(
 				`${Math.round(currFeels)}°`,
 				xCurr - 22 * fontScale * sizeRatio,

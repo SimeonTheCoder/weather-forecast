@@ -90,6 +90,7 @@ export function renderForecast(dayForecast, feelsLikeEnabled, isFirstDay) {
 		yBoundTop: 35,
 		feelsLikeEnabled: feelsLikeEnabled,
 		isFirstDay: isFirstDay,
+		font: 'Trebuchet MS',
 		// sx: end / 24,
 	});
 }

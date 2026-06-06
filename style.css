@@ -2,7 +2,9 @@ main {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-around;
-	font-family: Arial, Helvetica, sans-serif;
+	font-family:
+		'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans',
+		Arial, sans-serif;
 }
 
 canvas {
@@ -97,6 +99,7 @@ canvas {
 	.weather-card {
 		margin-top: 10px;
 		margin-bottom: 10px;
+		border-radius: 20px;
 	}
 
 	.weather-card h2 {
@@ -117,5 +120,12 @@ canvas {
 		text-shadow: rgb(255, 0, 43) 0px 0px 1vw 0px;
 		padding: unset;
 		margin: unset;
+	}
+
+	.weather-card .content {
+		justify-content: center;
+		align-items: center;
+		gap: 30px;
+		flex-direction: row;
 	}
 }
