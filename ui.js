@@ -1,6 +1,7 @@
 import { getDate, setDate } from './date.js';
-import { getCloudIcon } from './graphics.js';
+import { getCloudIcon, renderTemperature } from './graphics.js';
 import * as manager from './manager.js';
+import { setSetting, settings } from './settings.js';
 
 let daySelected = 0;
 let feelsLikeEnabled = false;
@@ -56,8 +57,10 @@ function updateCards(dayForecasts) {
 
 		card.children[1].children[0].textContent =
 			daysOfTheWeek[(today.dayOfWeek + id - 1 + 7) % 7];
-		card.children[1].children[1].children[0].textContent = max + '°';
-		card.children[1].children[1].children[1].textContent = min + '°';
+		card.children[1].children[1].children[0].textContent =
+			renderTemperature(max);
+		card.children[1].children[1].children[1].textContent =
+			renderTemperature(min);
 		card.children[0].textContent = getCloudIcon(
 			averageCloduiness,
 			rain > 0.25,
@@ -81,22 +84,6 @@ function updatePreviousDay(newDay) {
 function smoothstep(t) {
 	return t * t * (3.0 - 2.0 * t);
 }
-
-document.getElementById('feels-like').addEventListener('click', () => {
-	feelsLikeStaged = !feelsLikeEnabled;
-
-	if (feelsLikeStaged) {
-		feelsLikeEnabled = true;
-
-		animationTimer = 0;
-		timerSpeed = 1;
-	} else {
-		updatePreviousDay(previousDay);
-
-		animationTimer = 9;
-		timerSpeed = -1;
-	}
-});
 
 const cards = document.querySelectorAll('.weather-card');
 
@@ -204,4 +191,42 @@ document.getElementById('refresh').addEventListener('click', async () => {
 
 	animationTimer = 0;
 	timerSpeed = 1;
+});
+
+document.getElementById('units').addEventListener('click', () => {
+	if (settings.units == 'celsium') setSetting('units', 'fahrenheit');
+	else setSetting('units', 'celsium');
+
+	updateCards(dayForecasts);
+});
+
+document.getElementById('clock').addEventListener('click', () => {
+	if (settings.clock == '24h') setSetting('clock', '12h');
+	else setSetting('clock', '24h');
+});
+
+document.getElementById('theme').addEventListener('click', () => {
+	if (settings.theme == 'light') setSetting('theme', 'dark');
+	else setSetting('theme', 'light');
+
+	document.body.classList.toggle('dark');
+	document
+		.querySelectorAll('input')
+		.forEach((e) => e.classList.toggle('dark'));
+});
+
+document.getElementById('feels-like').addEventListener('click', () => {
+	feelsLikeStaged = !feelsLikeEnabled;
+
+	if (feelsLikeStaged) {
+		feelsLikeEnabled = true;
+
+		animationTimer = 0;
+		timerSpeed = 1;
+	} else {
+		updatePreviousDay(previousDay);
+
+		animationTimer = 9;
+		timerSpeed = -1;
+	}
 });

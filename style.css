@@ -1,3 +1,9 @@
+:root {
+	--bg-light: white;
+	--fg-light: #16161d;
+	--accent-light: coral;
+}
+
 body {
 	width: 99vw;
 	height: 99vh;
@@ -5,6 +11,13 @@ body {
 	font-family:
 		'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans',
 		Arial, sans-serif;
+	background-color: var(--bg-light);
+	color: var(--fg-light);
+}
+
+body.dark {
+	background-color: var(--fg-light);
+	color: var(--bg-light);
 }
 
 main {
@@ -28,7 +41,6 @@ canvas {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	text-shadow: rgb(255, 0, 43) 0px 0px 1vw 0px;
 	padding: unset;
 	margin: unset;
 }
@@ -38,7 +50,7 @@ canvas {
 	border-radius: 1vw;
 	width: 100%;
 	gap: 0.2vw;
-	border-bottom: 5px solid white;
+	border-bottom: 5px solid var(--bg-light);
 
 	display: flex;
 	justify-content: space-between;
@@ -47,13 +59,6 @@ canvas {
 	padding-right: 1.5vw;
 
 	transition: all 0.2s;
-}
-
-input[type='text'] {
-	width: 100%;
-	padding-left: 2vw;
-	padding-right: 2vw;
-	font-size: 1vw;
 }
 
 input {
@@ -69,7 +74,22 @@ input {
 
 	padding: 1vw;
 
+	background-color: var(--bg-light);
+	color: var(--fg-light);
+
 	transition: all 0.2s;
+}
+
+input.dark {
+	background-color: var(--fg-light);
+	color: var(--bg-light);
+}
+
+input[type='text'] {
+	width: 100%;
+	padding-left: 2vw;
+	padding-right: 2vw;
+	font-size: 1vw;
 }
 
 input.icon {
@@ -81,8 +101,8 @@ input.icon {
 }
 
 input.selected {
-	color: white;
-	background-color: coral;
+	color: var(--bg-light);
+	background-color: var(--accent-light);
 }
 
 .inputs {
@@ -100,7 +120,7 @@ input.selected {
 
 .weather-card:hover {
 	box-shadow: rgb(183, 183, 183) 0px 1vw 5vw 0px;
-	border-bottom: 5px solid coral;
+	border-bottom: 5px solid var(--accent-light);
 	cursor: pointer;
 	transition: all 0.2s;
 }
@@ -115,7 +135,7 @@ input.selected {
 .weather-card.selected:hover {
 	background-color: rgba(255, 127, 80, 0.343);
 	box-shadow: rgb(255, 147, 107) 0px 1vw 5vw 0px;
-	border-bottom: 5px solid coral;
+	border-bottom: 5px solid var(--accent-light);
 	cursor: pointer;
 	transition: all 0.2s;
 }

@@ -8,6 +8,7 @@ import {
 	lerpColors,
 } from './color-utils.js';
 import { getDate } from './date.js';
+import { settings } from './settings.js';
 
 const canvasElement = document.querySelector('canvas');
 
@@ -31,8 +32,52 @@ const cloudLevels = ['☀️', '🌤️', '⛅', '🌥️', '☁️'];
 const cloudLevelsRain = ['💧', '🌦️', '🌦️', '🌧️', '⛈️'];
 
 export function getCloudIcon(percentage, raining) {
-	const index = Math.floor(Math.max(percentage / 100 - 0.1, 0) * 5.55);
+	const index = Math.max(
+		0,
+		Math.min(4, Math.floor(Math.max(percentage / 100 - 0.1, 0) * 5.55)),
+	);
 	return raining ? cloudLevelsRain[index] : cloudLevels[index];
+}
+
+export function celsiumToFahrenheit(temperature) {
+	return temperature * 1.8 + 32;
+}
+
+export function renderTemperature(temperature) {
+	return settings.units == 'celsium'
+		? `${Math.floor(temperature)}°`
+		: `${Math.floor(celsiumToFahrenheit(temperature))} F`;
+}
+
+export function to12HTime(hour) {
+	if (hour == 0) return '12 AM';
+	if (hour < 12) return `${hour} AM`;
+	if (hour == 12) return `12 PM`;
+	if (hour > 12) return `${hour - 12} PM`;
+}
+
+export function renderTime(hour) {
+	return settings.clock == '24h' ? `${hour}:00` : `${to12HTime(hour)}`;
+}
+
+export function getBackgroundColor(change) {
+	let direction = -1;
+
+	if (settings.theme == 'dark') direction = 1;
+
+	const color = settings.theme == 'light' ? '#ffffff' : `#16161D`;
+
+	const result = {
+		r: hexToColor(color).r + direction * change,
+		g: hexToColor(color).g + direction * change,
+		b: hexToColor(color).b + direction * change,
+	};
+
+	return colorToHex(result);
+}
+
+export function getForegroundColor() {
+	return settings.theme == 'light' ? '#000000' : `#ffffff`;
 }
 
 export function plot(
@@ -132,7 +177,8 @@ export function plotWeather(options) {
 	const currHour = getDate().hour;
 
 	for (let i = start; i <= end; i++) {
-		canvas.fillStyle = i % 2 == 0 ? '#f8f8f8' : '#ffffff';
+		canvas.fillStyle =
+			i % 2 == 0 ? getBackgroundColor(0.05) : getBackgroundColor(0);
 		canvas.fillRect(x(i) - 50 * sizeRatio, 0, x(i + 1) - x(i), 1000);
 	}
 
@@ -142,7 +188,7 @@ export function plotWeather(options) {
 			canvas.fillRect(x(i) - 50 * sizeRatio, 0, x(i + 1) - x(i), 1000);
 		}
 
-		canvas.fillStyle = '#f0fff0';
+		canvas.fillStyle = getBackgroundColor(0.2);
 		canvas.fillRect(
 			x(currHour) - 50 * sizeRatio,
 			0,
@@ -215,7 +261,7 @@ export function plotWeather(options) {
 
 		canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px ${options.font}`;
 		canvas.fillText(
-			`${Math.floor(i - start)}:00`,
+			`${renderTime(i - start)}`,
 			xCurr - 25 * sizeRatio * fontScale,
 			maxY - 50 * sizeRatio * fontScale,
 		);
@@ -228,7 +274,7 @@ export function plotWeather(options) {
 
 		canvas.font = `${Math.floor(40 * sizeRatio * fontScale)}px ${options.font}`;
 		canvas.fillText(
-			`${Math.round(currTemp)}°`,
+			`${renderTemperature(currTemp)}`,
 			xCurr - 25 * sizeRatio * fontScale,
 			minY + 50 * sizeRatio * fontScale,
 		);
@@ -251,7 +297,7 @@ export function plotWeather(options) {
 
 			canvas.font = `${Math.floor(30 * sizeRatio * fontScale)}px ${options.font}`;
 			canvas.fillText(
-				`${Math.round(currFeels)}°`,
+				`${renderTemperature(currFeels)}`,
 				xCurr - 22 * fontScale * sizeRatio,
 				minY + 150 * fontScale * sizeRatio,
 			);
@@ -260,30 +306,37 @@ export function plotWeather(options) {
 			canvas.stroke();
 
 			if (currRain >= 0.25) {
-				canvas.fillStyle = 'darkturquoise';
+				let temp = canvas.fillStyle;
+
+				canvas.fillStyle = 'dodgerblue';
 
 				canvas.font = `${Math.floor(30 * sizeRatio * fontScale)}px ${options.font}`;
 				canvas.fillText(
-					`💧${Math.round(currRain * 100)}%`,
-					xCurr - 22 * fontScale * sizeRatio,
-					minY + 170 * fontScale * sizeRatio,
+					`💧${Math.min(100, Math.max(0, Math.round(currRain * 100)))}%`,
+					xCurr - 50 * fontScale * sizeRatio,
+					minY + 190 * fontScale * sizeRatio,
 				);
 
 				canvas.fill();
 				canvas.stroke();
+
+				canvas.fillStyle = temp;
 			}
 		} else if (currRain >= 0.25) {
-			canvas.fillStyle = 'darkturquoise';
+			let temp = canvas.fillStyle;
+			canvas.fillStyle = 'dodgerblue';
 
 			canvas.font = `${Math.floor(30 * sizeRatio * fontScale)}px ${options.font}`;
 			canvas.fillText(
-				`💧${Math.round(currRain * 100)}%`,
+				`💧${Math.min(100, Math.max(0, Math.round(currRain * 100)))}%`,
 				xCurr - 50 * fontScale * sizeRatio,
 				minY + 110 * fontScale * sizeRatio,
 			);
 
 			canvas.fill();
 			canvas.stroke();
+
+			canvas.fillStyle = temp;
 		}
 
 		// canvas.fill();

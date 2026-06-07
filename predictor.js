@@ -77,6 +77,74 @@ export function predictWithHistory(
 	return result;
 }
 
+export function predictRainWithHistory(data, steps, cloudsPrediction) {
+	const cloudRainMarkov = [];
+
+	for (let i = 0; i < 5; i++) {
+		cloudRainMarkov.push(new Array(4).fill(0));
+	}
+
+	for (let i = 0; i < data.length - 1; i++) {
+		const isRaining = data[i] > 0;
+		const isRainingNext = data[i + 1] > 0;
+
+		const curr_clouds = cloudsPrediction[i];
+		const cloudBucket = Math.min(4, Math.floor((curr_clouds / 100) * 5));
+
+		cloudRainMarkov[cloudBucket][
+			(isRaining ? 2 : 0) + (isRainingNext ? 1 : 0)
+		]++;
+	}
+
+	for (let i = 0; i < 5; i++) {
+		const sumA = cloudRainMarkov[i][0] + cloudRainMarkov[i][1];
+		const sumB = cloudRainMarkov[i][2] + cloudRainMarkov[i][3];
+
+		cloudRainMarkov[i][0] /= sumA;
+		cloudRainMarkov[i][1] /= sumA;
+
+		cloudRainMarkov[i][2] /= sumB;
+		cloudRainMarkov[i][3] /= sumB;
+	}
+
+	const historyLength = data.length;
+	const rainData = [];
+
+	for (let i = 0; i < historyLength; i++) {
+		rainData.push(data[i]);
+	}
+
+	let isRaining = false;
+
+	for (let i = 0; i < steps; i++) {
+		rainData.push(0);
+	}
+
+	for (let k = 0; k < 2000; k++) {
+		for (let i = 0; i < steps; i++) {
+			let curr_clouds = cloudsPrediction[historyLength + i];
+			if (isNaN(curr_clouds)) curr_clouds = 0;
+
+			const bucket = Math.min(4, Math.floor((curr_clouds / 100) * 5));
+
+			const probability = cloudRainMarkov[bucket][isRaining ? 2 : 0];
+			const random = Math.random();
+
+			const before = isRaining;
+
+			isRaining = random > probability;
+
+			const value = isRaining
+				? (Math.random() ** 1.22 / 1.06 + 0.65) ** 5
+				: 0;
+
+			rainData[historyLength + i] += value / 2000;
+		}
+	}
+
+	return rainData;
+}
+
 function interpolatePrediction(prediction, steps) {
 	const result = [];
 
