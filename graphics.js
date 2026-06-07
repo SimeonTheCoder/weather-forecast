@@ -21,14 +21,18 @@ canvasElement.height = height;
 
 export const canvas = document.querySelector('canvas').getContext('2d');
 
+canvas.lineJoin = 'round';
+
 export function clear() {
 	canvas.clearRect(0, 0, width, height);
 }
 
 const cloudLevels = ['☀️', '🌤️', '⛅', '🌥️', '☁️'];
+const cloudLevelsRain = ['💧', '🌦️', '🌦️', '🌧️', '⛈️'];
 
-export function getCloudIcon(percentage) {
-	return cloudLevels[Math.floor(Math.max(percentage / 100 - 0.1, 0) * 5.55)];
+export function getCloudIcon(percentage, raining) {
+	const index = Math.floor(Math.max(percentage / 100 - 0.1, 0) * 5.55);
+	return raining ? cloudLevelsRain[index] : cloudLevels[index];
 }
 
 export function plot(
@@ -127,36 +131,39 @@ export function plotWeather(options) {
 
 	const currHour = getDate().hour;
 
-	for (let i = start; i < end; i += 2) {
-		canvas.fillStyle = '#f8f8f8';
-		canvas.fillRect(x(i) - 50, 0, x(i + 1) - x(i), 1000);
+	for (let i = start; i <= end; i++) {
+		canvas.fillStyle = i % 2 == 0 ? '#f8f8f8' : '#ffffff';
+		canvas.fillRect(x(i) - 50 * sizeRatio, 0, x(i + 1) - x(i), 1000);
 	}
 
 	if (options.isFirstDay) {
 		for (let i = start; i < currHour; i++) {
 			canvas.fillStyle = '#00000011';
-			canvas.fillRect(x(i) - 50, 0, x(i + 1) - x(i), 1000);
+			canvas.fillRect(x(i) - 50 * sizeRatio, 0, x(i + 1) - x(i), 1000);
 		}
 
 		canvas.fillStyle = '#f0fff0';
 		canvas.fillRect(
-			x(currHour) - 50,
+			x(currHour) - 50 * sizeRatio,
 			0,
 			x(currHour + 1) - x(currHour),
 			1000,
 		);
 	}
 
-	for (let i = start; i < end - step; i += step) {
+	for (let i = start; i < end; i += step) {
 		canvas.beginPath();
 
 		const currTemp = options.data[i].temperature;
-		const nextTemp = options.data[i + step].temperature;
+		const nextTemp =
+			i + step != end ? options.data[i + step].temperature : 0;
 
 		const currFeels = options.data[i].feelsLike;
-		const nextFeels = options.data[i + step].feelsLike;
+		const nextFeels =
+			i + step != end ? options.data[i + step].feelsLike : 0;
 
 		const currClouds = options.data[i].clouds;
+		const currRain = options.data[i].rain;
 
 		const xCurr = x(i);
 		const xNext = x(i + step);
@@ -167,9 +174,6 @@ export function plotWeather(options) {
 		const yCurrFeels = y(currFeels);
 		const yNextFeels = y(nextFeels);
 
-		canvas.strokeStyle = colorFromTemperature(currTemp);
-		canvas.fillStyle = colorFromTemperature(currTemp);
-
 		const minY = options.feelsLikeEnabled
 			? Math.max(yCurrTemp, yCurrFeels)
 			: yCurrTemp;
@@ -178,12 +182,35 @@ export function plotWeather(options) {
 			? Math.min(yCurrTemp, yCurrFeels)
 			: yCurrTemp;
 
-		canvas.moveTo(xCurr, yCurrTemp);
-		canvas.lineTo(xNext, yNextTemp);
+		if (currRain * 10 > 1) {
+			canvas.fillStyle = '#0000ff44';
+			canvas.fillRect(
+				x(i) - 50 * sizeRatio,
+				height - height * options.data[i].rain * 0.3,
+				x(i + 1 * step) - x(i),
+				height * options.data[i].rain * 0.3,
+			);
+			// canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px ${options.font}`;
+			// canvas.fillText(
+			// 	`${currRain.toFixed(1)} mm`,
+			// 	xCurr - 35 * sizeRatio * fontScale,
+			// 	height -
+			// 		height * options.data[i].rain * 0.3 -
+			// 		35 * sizeRatio * fontScale,
+			// );
+		}
 
-		if (options.feelsLikeEnabled) {
-			canvas.moveTo(xCurr, yCurrFeels);
-			canvas.lineTo(xNext, yNextFeels);
+		canvas.strokeStyle = colorFromTemperature(currTemp);
+		canvas.fillStyle = colorFromTemperature(currTemp);
+
+		if (i + step != end) {
+			canvas.moveTo(xCurr, yCurrTemp);
+			canvas.lineTo(xNext, yNextTemp);
+
+			if (options.feelsLikeEnabled) {
+				canvas.moveTo(xCurr, yCurrFeels);
+				canvas.lineTo(xNext, yNextFeels);
+			}
 		}
 
 		canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px ${options.font}`;
@@ -194,7 +221,7 @@ export function plotWeather(options) {
 		);
 		canvas.font = `${Math.floor(50 * sizeRatio * iconScale)}px ${options.font}`;
 		canvas.fillText(
-			`${getCloudIcon(currClouds)}`,
+			`${getCloudIcon(currClouds, currRain > 0.3)}`,
 			xCurr - 35 * sizeRatio * fontScale,
 			maxY - 100 * sizeRatio * fontScale,
 		);
@@ -205,6 +232,9 @@ export function plotWeather(options) {
 			xCurr - 25 * sizeRatio * fontScale,
 			minY + 50 * sizeRatio * fontScale,
 		);
+
+		canvas.fill();
+		canvas.stroke();
 
 		if (options.feelsLikeEnabled) {
 			canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px ${options.font}`;
@@ -225,12 +255,41 @@ export function plotWeather(options) {
 				xCurr - 22 * fontScale * sizeRatio,
 				minY + 150 * fontScale * sizeRatio,
 			);
+
+			canvas.fill();
+			canvas.stroke();
+
+			if (currRain >= 0.25) {
+				canvas.fillStyle = 'darkturquoise';
+
+				canvas.font = `${Math.floor(30 * sizeRatio * fontScale)}px ${options.font}`;
+				canvas.fillText(
+					`💧${Math.round(currRain * 100)}%`,
+					xCurr - 22 * fontScale * sizeRatio,
+					minY + 170 * fontScale * sizeRatio,
+				);
+
+				canvas.fill();
+				canvas.stroke();
+			}
+		} else if (currRain >= 0.25) {
+			canvas.fillStyle = 'darkturquoise';
+
+			canvas.font = `${Math.floor(30 * sizeRatio * fontScale)}px ${options.font}`;
+			canvas.fillText(
+				`💧${Math.round(currRain * 100)}%`,
+				xCurr - 50 * fontScale * sizeRatio,
+				minY + 110 * fontScale * sizeRatio,
+			);
+
+			canvas.fill();
+			canvas.stroke();
 		}
 
-		canvas.fill();
-		canvas.stroke();
+		// canvas.fill();
+		// canvas.stroke();
 
-		if (options.feelsLikeEnabled) {
+		if (options.feelsLikeEnabled && i + step != end) {
 			canvas.beginPath();
 
 			canvas.moveTo(xCurr, yCurrTemp);
@@ -248,7 +307,7 @@ export function plotWeather(options) {
 	canvas.strokeStyle = options.color ? options.color : 'black';
 	canvas.stroke();
 
-	for (let i = start; i < end - 1; i += step) {
+	for (let i = start; i < end; i += step) {
 		canvas.fillStyle = colorFromTemperature(options.data[i].temperature);
 
 		canvas.beginPath();

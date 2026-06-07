@@ -7,6 +7,27 @@
 		<link rel="stylesheet" href="./style.css" />
 	</head>
 	<body>
+		<div class="inputs">
+			<div>
+				<input id="city" type="text" placeholder="Enter City Name" />
+				<input type="button" value="🔍" id="search-city" class="icon" />
+			</div>
+			<div>
+				<input id="date" type="text" placeholder="Enter Date" />
+				<input type="button" value="🔄️" id="refresh" class="icon" />
+			</div>
+			<div id="icons-container">
+				<input type="button" value="💨" id="feels-like" class="icon" />
+				<input type="button" value="🌡️" id="units" class="icon" />
+				<input type="button" value="🕜" id="clock" class="icon" />
+				<input
+					type="button"
+					value="🌙"
+					id="change-theme"
+					class="icon"
+				/>
+			</div>
+		</div>
 		<canvas></canvas>
 		<main>
 			<div class="weather-card" id="day-0">
@@ -61,16 +82,12 @@
 			</div>
 		</main>
 
-		<input type="checkbox" />
-		<input type="text" />
-		<input type="button" value="Refresh" />
-
-		<script src="./math.js" type="module"></script>
+		<!-- <script src="./math.js" type="module"></script>
 		<script src="./date.js" type="module"></script>
 		<script src="./color-utils.js" type="module"></script>
 		<script src="./canvas.js" type="module"></script>
 		<script src="./predictor.js" type="module"></script>
-		<script src="./manager.js" type="module"></script>
+		<script src="./manager.js" type="module"></script> -->
 		<script src="./ui.js" type="module"></script>
 	</body>
 </html>

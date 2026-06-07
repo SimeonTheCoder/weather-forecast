@@ -233,7 +233,6 @@ function constructMarkov(
 		}
 	}
 
-	console.log(markov);
 	return markov;
 }
 
@@ -313,7 +312,7 @@ function makePrediction(
 
 	const result = new Array(Math.floor(steps)).fill(0);
 
-	for (let k = 0; k < 20; k++) {
+	for (let k = 0; k < 200; k++) {
 		let last = data[data.length - 1];
 
 		let velocity = 0;
@@ -339,7 +338,7 @@ function makePrediction(
 		}
 	}
 
-	for (let i = 0; i < steps; i++) result[i] /= 20;
+	for (let i = 0; i < steps; i++) result[i] /= 200;
 
 	return result;
 }
