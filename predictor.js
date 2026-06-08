@@ -134,9 +134,7 @@ export function predictRainWithHistory(data, steps, cloudsPrediction) {
 
 			isRaining = random > probability;
 
-			const value = isRaining
-				? (Math.random() ** 1.22 / 1.06 + 0.65) ** 5
-				: 0;
+			const value = isRaining ? 1 : 0;
 
 			rainData[historyLength + i] += value / 2000;
 		}

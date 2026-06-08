@@ -70,14 +70,14 @@ function forecast(data, predictionSteps) {
 	};
 }
 
-export async function createForecast(predictionSteps) {
+export async function createForecast(predictionSteps, latitude, longitude) {
 	const timeNow = getDate();
 
 	const dateStr = `${timeNow.year}-${timeNow.month.toString().padStart(2, '0')}-${(timeNow.day - 1).toString().padStart(2, '0')}`;
 
 	// const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-01-01&end_date=2026-03-03&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m`;
 
-	const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-01-01&end_date=${dateStr}&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m`;
+	const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=${latitude}&longitude=${longitude}&start_date=2026-01-01&end_date=${dateStr}&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m`;
 	let data = await fetchData(URL);
 
 	console.log(data);

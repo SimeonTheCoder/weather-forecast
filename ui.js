@@ -1,7 +1,12 @@
 import { getDate, setDate } from './date.js';
 import { getCloudIcon, renderTemperature } from './graphics.js';
 import * as manager from './manager.js';
-import { setSetting, settings } from './settings.js';
+import {
+	loadSettings,
+	saveSettings,
+	setSetting,
+	settings,
+} from './settings.js';
 
 let daySelected = 0;
 let feelsLikeEnabled = false;
@@ -13,6 +18,8 @@ let rangeLower = 0;
 let rangeUpper = 40;
 
 let feelsLikeStaged = false;
+
+loadSettings();
 
 function clearCards() {
 	for (let card of cards) {
@@ -85,6 +92,27 @@ function smoothstep(t) {
 	return t * t * (3.0 - 2.0 * t);
 }
 
+async function getCoordinates() {
+	let city = settings.city;
+	console.log('City: ' + city);
+
+	const coordinates = await fetch(
+		'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' +
+			encodeURIComponent(city),
+		{
+			headers: {
+				Accept: 'application/json',
+			},
+		},
+	)
+		.then((r) => r.json())
+		.then((r) => r[0]);
+
+	console.log(coordinates);
+
+	return [coordinates.lat, coordinates.lon];
+}
+
 const cards = document.querySelectorAll('.weather-card');
 
 for (let card of cards) {
@@ -101,10 +129,18 @@ for (let card of cards) {
 	});
 }
 
-let dayForecasts = await manager.createForecast(200);
+let dayForecasts;
 
 async function forecast() {
-	dayForecasts = await manager.createForecast(200);
+	const coordinates = await getCoordinates();
+
+	console.log(coordinates);
+
+	dayForecasts = await manager.createForecast(
+		200,
+		coordinates[0],
+		coordinates[1],
+	);
 	updateCards(dayForecasts);
 }
 
@@ -198,17 +234,17 @@ document.getElementById('units').addEventListener('click', () => {
 	else setSetting('units', 'celsium');
 
 	updateCards(dayForecasts);
+	saveSettings();
 });
 
 document.getElementById('clock').addEventListener('click', () => {
 	if (settings.clock == '24h') setSetting('clock', '12h');
 	else setSetting('clock', '24h');
+
+	saveSettings();
 });
 
-document.getElementById('theme').addEventListener('click', () => {
-	if (settings.theme == 'light') setSetting('theme', 'dark');
-	else setSetting('theme', 'light');
-
+function switchTheme() {
 	document.body.classList.toggle('dark');
 	document
 		.querySelectorAll('input')
@@ -216,20 +252,64 @@ document.getElementById('theme').addEventListener('click', () => {
 	document
 		.querySelectorAll('.weather-card')
 		.forEach((e) => e.classList.toggle('dark'));
+}
+
+document.getElementById('theme').addEventListener('click', () => {
+	if (settings.theme == 'light') setSetting('theme', 'dark');
+	else setSetting('theme', 'light');
+
+	switchTheme();
+
+	saveSettings();
 });
 
+function enableFeelsLike() {
+	feelsLikeEnabled = true;
+
+	animationTimer = 0;
+	timerSpeed = 1;
+}
+
 document.getElementById('feels-like').addEventListener('click', () => {
+	setSetting('feelsLike', !settings.feelsLike);
 	feelsLikeStaged = !feelsLikeEnabled;
 
 	if (feelsLikeStaged) {
-		feelsLikeEnabled = true;
-
-		animationTimer = 0;
-		timerSpeed = 1;
+		enableFeelsLike();
 	} else {
 		updatePreviousDay(previousDay);
 
 		animationTimer = 9;
 		timerSpeed = -1;
 	}
+
+	saveSettings();
 });
+
+document.getElementById('search-city').addEventListener('click', async () => {
+	const cityName = document.getElementById('city').value;
+
+	if (cityName.trim() == '') return;
+
+	setSetting('city', cityName);
+
+	updatePreviousDay(dayForecasts[daySelected]);
+
+	await forecast();
+
+	clearCards();
+
+	daySelected = 0;
+	cards[0].classList.add('selected');
+
+	animationTimer = 0;
+	timerSpeed = 1;
+
+	saveSettings();
+});
+
+if (settings.theme == 'dark') switchTheme();
+feelsLikeEnabled = settings.feelsLike;
+feelsLikeStaged = settings.feelsLike;
+
+if (feelsLikeEnabled) enableFeelsLike();
