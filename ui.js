@@ -213,6 +213,9 @@ document.getElementById('theme').addEventListener('click', () => {
 	document
 		.querySelectorAll('input')
 		.forEach((e) => e.classList.toggle('dark'));
+	document
+		.querySelectorAll('.weather-card')
+		.forEach((e) => e.classList.toggle('dark'));
 });
 
 document.getElementById('feels-like').addEventListener('click', () => {

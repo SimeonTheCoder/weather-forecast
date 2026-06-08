@@ -1,7 +1,11 @@
 :root {
-	--bg-light: white;
-	--fg-light: #16161d;
-	--accent-light: coral;
+	--bg: white;
+	--fg: #16161d;
+	--shadow: rgb(185, 185, 185);
+	--shadow-dark: rgb(66, 66, 66);
+	--accent: coral;
+	--accent-shadow: rgb(255, 182, 156);
+	--accent-shadow--dark: rgb(110, 78, 67);
 }
 
 body {
@@ -11,13 +15,13 @@ body {
 	font-family:
 		'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans',
 		Arial, sans-serif;
-	background-color: var(--bg-light);
-	color: var(--fg-light);
+	background-color: var(--bg);
+	color: var(--fg);
 }
 
 body.dark {
-	background-color: var(--fg-light);
-	color: var(--bg-light);
+	background-color: var(--fg);
+	color: var(--bg);
 }
 
 main {
@@ -46,11 +50,11 @@ canvas {
 }
 
 .weather-card {
-	box-shadow: rgb(185, 185, 185) 0px 0px 5vw 0px;
+	box-shadow: var(--shadow) 0px 0px 5vw 0px;
 	border-radius: 1vw;
 	width: 100%;
 	gap: 0.2vw;
-	border-bottom: 5px solid var(--bg-light);
+	border-bottom: 5px solid var(--bg);
 
 	display: flex;
 	justify-content: space-between;
@@ -61,6 +65,10 @@ canvas {
 	transition: all 0.2s;
 }
 
+.weather-card.dark {
+	box-shadow: var(--shadow-dark) 0px 0px 5vw 0px;
+}
+
 input {
 	font-family:
 		'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans',
@@ -68,21 +76,22 @@ input {
 
 	display: inline;
 
-	box-shadow: rgb(185, 185, 185) 0px 0px 5vw 0px;
+	box-shadow: var(--shadow) 0px 0px 5vw 0px;
 	border: 0px;
 	border-radius: 1vw;
 
 	padding: 1vw;
 
-	background-color: var(--bg-light);
-	color: var(--fg-light);
+	background-color: var(--bg);
+	color: var(--fg);
 
 	transition: all 0.2s;
 }
 
 input.dark {
-	background-color: var(--fg-light);
-	color: var(--bg-light);
+	background-color: var(--fg);
+	color: var(--bg);
+	box-shadow: var(--shadow-dark) 0px 0px 5vw 0px;
 }
 
 input[type='text'] {
@@ -101,8 +110,8 @@ input.icon {
 }
 
 input.selected {
-	color: var(--bg-light);
-	background-color: var(--accent-light);
+	color: var(--bg);
+	background-color: var(--accent);
 }
 
 .inputs {
@@ -119,8 +128,15 @@ input.selected {
 }
 
 .weather-card:hover {
-	box-shadow: rgb(183, 183, 183) 0px 1vw 5vw 0px;
-	border-bottom: 5px solid var(--accent-light);
+	box-shadow: var(--shadow) 0px 1vw 5vw 0px;
+	border-bottom: 5px solid var(--accent);
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.weather-card.dark:hover {
+	box-shadow: var(--shadow-dark) 0px 1vw 5vw 0px;
+	border-bottom: 5px solid var(--accent);
 	cursor: pointer;
 	transition: all 0.2s;
 }
@@ -128,16 +144,24 @@ input.selected {
 .weather-card.selected {
 	background-color: rgba(255, 127, 80, 0.343);
 	border-bottom: 5px solid rgba(255, 127, 80, 0.343);
-	box-shadow: rgb(255, 182, 156) 0px 0px 5vw 0px;
+	box-shadow: var(--accent-shadow) 0px 0px 5vw 0px;
 	transition: all 0.2s;
+}
+
+.weather-card.dark.selected {
+	box-shadow: var(--accent-shadow--dark) 0px 0px 5vw 0px;
 }
 
 .weather-card.selected:hover {
 	background-color: rgba(255, 127, 80, 0.343);
-	box-shadow: rgb(255, 147, 107) 0px 1vw 5vw 0px;
+	box-shadow: var(--accent-shadow) 0px 1vw 5vw 0px;
 	border-bottom: 5px solid var(--accent-light);
 	cursor: pointer;
 	transition: all 0.2s;
+}
+
+.weather-card.dark.selected:hover {
+	box-shadow: var(--accent-shadow--dark) 0px 0px 5vw 0px;
 }
 
 .weather-card .content {
@@ -157,7 +181,7 @@ input.selected {
 }
 
 .red {
-	color: rgb(226, 120, 39);
+	color: var(--accent);
 }
 
 .blue {
@@ -167,7 +191,8 @@ input.selected {
 @media (max-width: 600px) {
 	body {
 		width: 92vw;
-		overflow: hidden;
+		overflow-x: hidden;
+		overflow-y: unset;
 	}
 
 	canvas {
@@ -201,7 +226,6 @@ input.selected {
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		text-shadow: rgb(255, 0, 43) 0px 0px 1vw 0px;
 		padding: unset;
 		margin: unset;
 	}

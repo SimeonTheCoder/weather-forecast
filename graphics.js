@@ -135,20 +135,20 @@ export function plotWeather(options) {
 	const iconScale = (step - 1) * 0.5 + 1;
 
 	function x(x) {
-		return (
+		return Math.floor(
 			(width / (end - start)) *
 				(x - start) *
 				(options.sx ? options.sx : 1) +
-			50 * sizeRatio * fontScale
+				50 * sizeRatio * fontScale,
 		);
 	}
 
 	function y(y) {
-		return (
+		return Math.floor(
 			height -
-			((y - options.yBoundBottom) /
-				(options.yBoundTop - options.yBoundBottom)) *
-				height
+				((y - options.yBoundBottom) /
+					(options.yBoundTop - options.yBoundBottom)) *
+					height,
 		);
 	}
 
@@ -157,17 +157,17 @@ export function plotWeather(options) {
 			? colorToHex(
 					normalizeColor(
 						lerpColors(
-							hexToColor('888888'),
-							hexToColor('ff0000'),
-							(t - 15) / (40 - 15),
+							hexToColor('#88ffcc'),
+							hexToColor('#ff4400'),
+							Math.max(0, Math.min(1, (t - 15) / (40 - 15))),
 						),
 					),
 				)
 			: colorToHex(
 					normalizeColor(
 						lerpColors(
-							hexToColor('0000ff'),
-							hexToColor('888888'),
+							hexToColor('#0088ff'),
+							hexToColor('#88ffcc'),
 							Math.max(0, Math.min(1, (t - 5) / (15 - 5))),
 						),
 					),
@@ -177,25 +177,164 @@ export function plotWeather(options) {
 	const currHour = getDate().hour;
 
 	for (let i = start; i <= end; i++) {
-		canvas.fillStyle =
-			i % 2 == 0 ? getBackgroundColor(0.05) : getBackgroundColor(0);
-		canvas.fillRect(x(i) - 50 * sizeRatio, 0, x(i + 1) - x(i), 1000);
-	}
+		canvas.beginPath();
+		// canvas.fillStyle =
+		// 	i % 2 == 0 ? getBackgroundColor(0.05) : getBackgroundColor(0);
 
-	if (options.isFirstDay) {
-		for (let i = start; i < currHour; i++) {
-			canvas.fillStyle = '#00000011';
-			canvas.fillRect(x(i) - 50 * sizeRatio, 0, x(i + 1) - x(i), 1000);
-		}
-
-		canvas.fillStyle = getBackgroundColor(0.2);
-		canvas.fillRect(
-			x(currHour) - 50 * sizeRatio,
-			0,
-			x(currHour + 1) - x(currHour),
-			1000,
+		const color = hexToColor(
+			i % 2 == 0 ? getBackgroundColor(0.02) : getBackgroundColor(0),
 		);
+
+		const grad = canvas.createLinearGradient(
+			x(i) - 50 * sizeRatio,
+			0,
+			x(i) - 50 * sizeRatio + x(i + 1) - x(i) + 1,
+			0,
+		);
+
+		grad.addColorStop(
+			0,
+			colorToHex(
+				lerpColors(
+					normalizeColor(
+						lerpColors(
+							hexToColor('#0088ff'),
+							hexToColor('#ff8800'),
+							Math.abs((i - start) / (end - start) - 0.5) * 2,
+						),
+					),
+					color,
+					0.7,
+				),
+			),
+		);
+		grad.addColorStop(
+			1,
+			colorToHex(
+				lerpColors(
+					normalizeColor(
+						lerpColors(
+							hexToColor('#0088ff'),
+							hexToColor('#ff8800'),
+							Math.abs((i + 1 - start) / (end - start) - 0.5) * 2,
+						),
+					),
+					color,
+					0.7,
+				),
+			),
+		);
+
+		canvas.fillStyle = grad;
+		canvas.rect(
+			x(i) - Math.floor(50 * sizeRatio),
+			0,
+			x(i + 1) - x(i) + 5,
+			height,
+		);
+		canvas.fill();
+		canvas.closePath();
+
+		canvas.beginPath();
+
+		const grad2 = canvas.createLinearGradient(0, 0, 0, height);
+
+		const alpha =
+			i != end
+				? Math.floor((options.data[i].clouds / 100) ** 1 * 255)
+				: 0;
+
+		grad2.addColorStop(
+			0,
+			colorToHex(
+				lerpColors(
+					normalizeColor(
+						lerpColors(
+							hexToColor(`#0088ff`),
+							hexToColor(getBackgroundColor(0.25)),
+							alpha / 255,
+						),
+					),
+					color,
+					0.2,
+				),
+			),
+		);
+		// grad2.addColorStop(
+		// 	Math.max(
+		// 		0,
+		// 		Math.min(
+		// 			1,
+		// 			y(i != end ? options.data[i].temperature : 15) / height -
+		// 				0.1,
+		// 		),
+		// 	),
+		// 	`${getBackgroundColor(0)}88`,
+		// );
+		// grad2.addColorStop(
+		// 	Math.max(
+		// 		0,
+		// 		Math.min(
+		// 			1,
+		// 			y(i != end ? options.data[i].temperature : 15) / height +
+		// 				0.1,
+		// 		),
+		// 	),
+		// 	`${getBackgroundColor(0)}88`,
+		// );
+		grad2.addColorStop(
+			1,
+			colorToHex(
+				lerpColors(
+					normalizeColor(
+						lerpColors(
+							hexToColor(`#ffffff`),
+							hexToColor(getBackgroundColor(0.25)),
+							alpha / 255,
+						),
+					),
+					color,
+					0.2,
+				),
+			) + alpha.toString(16).padStart(2, '0'),
+		);
+
+		// grad2.addColorStop(
+		// 	0,
+		// 	`${getBackgroundColor(0.25)}${alpha.toString(16).padStart(2, '0')}`,
+		// );
+		// grad2.addColorStop(
+		// 	1,
+		// 	`${getBackgroundColor(0.25)}${Math.floor(alpha * 0.5)
+		// 		.toString(16)
+		// 		.padStart(2, '0')}`,
+		// );
+
+		canvas.fillStyle = grad2;
+		canvas.rect(
+			x(i) - Math.floor(50 * sizeRatio),
+			0,
+			x(i + 1) - x(i) + 5,
+			height,
+		);
+		canvas.fill();
+		canvas.closePath();
 	}
+
+	// if (options.isFirstDay) {
+	// 	for (let i = start; i < currHour; i++) {
+	// 		canvas.fillStyle = '#00000011';
+	// 		canvas.fillRect(x(i) - 50 * sizeRatio, 0, x(i + 1) - x(i), 1000);
+	// 	}
+
+	// 	canvas.fillStyle = getBackgroundColor(0.2);
+	// 	canvas.fillRect(
+	// 		x(currHour) - 50 * sizeRatio,
+	// 		0,
+	// 		x(currHour + 1) - x(currHour),
+	// 		1000,
+	// 	);
+	// }
 
 	for (let i = start; i < end; i += step) {
 		canvas.beginPath();
@@ -228,6 +367,14 @@ export function plotWeather(options) {
 			? Math.min(yCurrTemp, yCurrFeels)
 			: yCurrTemp;
 
+		const minYNext = options.feelsLikeEnabled
+			? Math.max(yNextTemp, yNextFeels)
+			: yNextTemp;
+
+		const maxYNext = options.feelsLikeEnabled
+			? Math.min(yNextTemp, yNextFeels)
+			: yNextTemp;
+
 		if (currRain * 10 > 1) {
 			canvas.fillStyle = '#0000ff44';
 			canvas.fillRect(
@@ -253,11 +400,25 @@ export function plotWeather(options) {
 			canvas.moveTo(xCurr, yCurrTemp);
 			canvas.lineTo(xNext, yNextTemp);
 
+			canvas.strokeStyle = colorFromTemperature(currFeels);
+			canvas.fillStyle = colorFromTemperature(currFeels);
+
 			if (options.feelsLikeEnabled) {
 				canvas.moveTo(xCurr, yCurrFeels);
 				canvas.lineTo(xNext, yNextFeels);
 			}
 		}
+
+		canvas.strokeStyle = colorFromTemperature(currTemp);
+		canvas.fillStyle = colorToHex(
+			// normalizeColor(
+			lerpColors(
+				hexToColor(colorFromTemperature(currTemp)),
+				hexToColor('#ffffff'),
+				1.0,
+			),
+			// ),
+		);
 
 		canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px ${options.font}`;
 		canvas.fillText(
@@ -281,6 +442,8 @@ export function plotWeather(options) {
 
 		canvas.fill();
 		canvas.stroke();
+
+		canvas.fillStyle = colorFromTemperature(currTemp);
 
 		if (options.feelsLikeEnabled) {
 			canvas.font = `${Math.floor(20 * sizeRatio * fontScale)}px ${options.font}`;
@@ -345,16 +508,41 @@ export function plotWeather(options) {
 		if (options.feelsLikeEnabled && i + step != end) {
 			canvas.beginPath();
 
+			const grad = canvas.createLinearGradient(
+				xCurr * 0.5 + xNext * 0.5,
+				maxYNext * 0.5 + maxYNext * 0.5,
+				xCurr * 0.5 + xNext * 0.5,
+				minY * 0.5 + minYNext * 0.5,
+			);
+			grad.addColorStop(
+				0,
+				colorFromTemperature(
+					Math.max(currTemp, currFeels) * 0.5 +
+						Math.max(nextTemp, nextFeels) * 0.5,
+				) + '88',
+			);
+			grad.addColorStop(
+				1,
+				colorFromTemperature(
+					Math.min(currTemp, currFeels) * 0.5 +
+						Math.min(nextTemp, nextFeels) * 0.5,
+				) + '88',
+			);
+
+			canvas.fillStyle = grad;
+
 			canvas.moveTo(xCurr, yCurrTemp);
 			canvas.lineTo(xNext, yNextTemp);
 			canvas.lineTo(xNext, yNextFeels);
 			canvas.lineTo(xCurr, yCurrFeels);
 			canvas.lineTo(xCurr, yCurrTemp);
 
-			canvas.fillStyle += '88';
+			canvas.fill();
+
+			// canvas.fillStyle += '88';
 		}
 
-		canvas.fill();
+		// canvas.fill();
 	}
 
 	canvas.strokeStyle = options.color ? options.color : 'black';

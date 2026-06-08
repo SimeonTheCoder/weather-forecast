@@ -19,10 +19,11 @@ import {
 import { predictRainWithHistory, predictWithHistory } from './predictor.js';
 
 async function fetchData(URL) {
-	const data = await fetch('./data.json').then((r) => r.json());
-	// const data = await fetch(URL).then((r) => r.json());
-	return data;
-	// return data.hourly;
+	// const data = await fetch('./data.json').then((r) => r.json());
+	const data = await fetch(URL).then((r) => r.json());
+	// return data;
+	// document.body.innerHTML = JSON.stringify(data.hourly);
+	return data.hourly;
 }
 
 function forecast(data, predictionSteps) {
@@ -74,7 +75,9 @@ export async function createForecast(predictionSteps) {
 
 	const dateStr = `${timeNow.year}-${timeNow.month.toString().padStart(2, '0')}-${(timeNow.day - 1).toString().padStart(2, '0')}`;
 
-	const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2024-01-01&end_date=${dateStr}&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m`;
+	// const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-01-01&end_date=2026-03-03&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m`;
+
+	const URL = `https://archive-api.open-meteo.com/v1/archive?latitude=42.6975&longitude=23.3241&start_date=2026-01-01&end_date=${dateStr}&hourly=temperature_2m,apparent_temperature,rain,cloud_cover,wind_speed_10m,wind_direction_10m`;
 	let data = await fetchData(URL);
 
 	console.log(data);
@@ -106,8 +109,6 @@ export function renderForecast(
 
 function sliceForecast(data, predictionSteps) {
 	const forecastResult = forecast(data, predictionSteps);
-	// renderForecast(forecastResult);
-
 	const pastSamplesOffset = data.apparent_temperature.length;
 
 	const dayForecsts = [];
@@ -120,8 +121,9 @@ function sliceForecast(data, predictionSteps) {
 
 			const hour = {
 				hour: j,
-				temperature: forecastResult.temperature_2m[sampleIndex],
+				temperature: forecastResult.temperature_2m[sampleIndex] * 1,
 				feelsLike: forecastResult.apparent_temperature[sampleIndex],
+				// clouds: ((j + i * 24) / 24 / 5) * 100,
 				clouds: forecastResult.cloud_cover[sampleIndex],
 				rain: forecastResult.rain[sampleIndex],
 			};
