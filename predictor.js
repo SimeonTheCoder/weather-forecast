@@ -1,4 +1,3 @@
-import { plot } from './graphics.js';
 import { smooth } from './math.js';
 
 const quantizationScale = 2;

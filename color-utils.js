@@ -1,4 +1,4 @@
-export function hexToColor(hex) {
+export function fromHex(hex) {
 	const rBits = hex.slice(1, 3);
 	const gBits = hex.slice(3, 5);
 	const bBits = hex.slice(5, 7);
@@ -14,7 +14,9 @@ export function hexToColor(hex) {
 	};
 }
 
-export function colorToHex(color) {
+export function toHex(color) {
+	if (color.toString().startsWith('#')) return color;
+
 	const rBits = Math.floor(color.r * 255)
 		.toString(16)
 		.padStart(2, '0');
@@ -28,20 +30,25 @@ export function colorToHex(color) {
 	return `#${rBits}${gBits}${bBits}`;
 }
 
-export function lerpColors(colA, colB, t) {
-	return {
+export function lerp(colA, colB, t) {
+	if (colA.toString().startsWith('#')) colA = fromHex(colA);
+	if (colB.toString().startsWith('#')) colB = fromHex(colB);
+
+	return toHex({
 		r: colA.r * (1 - t) + colB.r * t,
 		g: colA.g * (1 - t) + colB.g * t,
 		b: colA.b * (1 - t) + colB.b * t,
-	};
+	});
 }
 
-export function normalizeColor(col) {
+export function normalize(col) {
+	if (col.toString().startsWith('#')) col = fromHex(col);
+
 	const l = Math.sqrt(col.r * col.r + col.g * col.g + col.b * col.b);
 
-	return {
+	return toHex({
 		r: col.r / l,
 		g: col.g / l,
 		b: col.b / l,
-	};
+	});
 }

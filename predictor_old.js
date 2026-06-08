@@ -1,4 +1,3 @@
-import { plot } from './graphics.js';
 import {
 	fourierTransform,
 	generateArr,
@@ -61,7 +60,7 @@ export function predict(data) {
 			sampleCount - fourierWindowSize + 10,
 		).slice(sampleCount - fourierWindowSize);
 
-		plot(prediction, 0, 360, -10, 10);
+		// plot(prediction, 0, 360, -10, 10);
 
 		for (let j = 0; j < prediction.length; j++) {
 			snapshots[j].magnitude.push(prediction[j]);

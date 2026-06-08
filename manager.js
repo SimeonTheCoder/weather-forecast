@@ -9,7 +9,7 @@ wind_speed_10m: "km/h"
 */
 
 import { getDate } from './date.js';
-import { clear as clearCanvas, plot, plotWeather } from './graphics.js';
+import { clear as clearCanvas, plotWeather } from './graphics.js';
 import {
 	fourierTransform,
 	generateArr,
